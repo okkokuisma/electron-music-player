@@ -20,4 +20,5 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
+  setTitle: (title: string) => ipcRenderer.send('set-title', title)
 });

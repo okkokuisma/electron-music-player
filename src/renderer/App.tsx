@@ -34,6 +34,7 @@ const Hello = () => {
             Donate
           </button>
         </a>
+        <button onClick={() => window.electron.setTitle('test')}></button>
       </div>
     </div>
   );

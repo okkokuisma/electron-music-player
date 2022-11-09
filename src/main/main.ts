@@ -1,15 +1,5 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, IpcMainEvent } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -124,9 +114,16 @@ app.on('window-all-closed', () => {
   }
 });
 
+const handleSetTitle = (event: IpcMainEvent, title: string) => {
+  const webContents = event.sender
+  const win = BrowserWindow.fromWebContents(webContents)
+  if (win) win.setTitle(title)
+}
+
 app
   .whenReady()
   .then(() => {
+    ipcMain.on('set-title', handleSetTitle)
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
