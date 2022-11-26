@@ -6,6 +6,13 @@ module.exports = {
     'import/no-unresolved': 'error',
     // Since React 17 and typescript 4.1 you can safely disable the rule
     'react/react-in-jsx-scope': 'off',
+    'react/require-default-props': [
+      'off',
+      // {
+      //   forbidDefaultForRequired: true,
+      //   functions: 'defaultArguments',
+      // },
+    ],
   },
   parserOptions: {
     ecmaVersion: 2020,
@@ -27,4 +34,5 @@ module.exports = {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
+  ignorePatterns: ['index.ejs'],
 };

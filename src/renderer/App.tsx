@@ -1,51 +1,36 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
-import './App.css';
+import { useEffect } from 'react';
 
-const Hello = () => {
-  return (
-    <div>
-      <div className="Hello">
-        <img width="200" alt="icon" src={icon} />
-      </div>
-      <h1>electron-react-boilerplate</h1>
-      <div className="Hello">
-        <a
-          href="https://electron-react-boilerplate.js.org/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
-          </button>
-        </a>
-        <a
-          href="https://github.com/sponsors/electron-react-boilerplate"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <button type="button">
-            <span role="img" aria-label="folded hands">
-              🙏
-            </span>
-            Donate
-          </button>
-        </a>
-        <button onClick={() => window.electron.setTitle('test')}></button>
-      </div>
-    </div>
-  );
-};
+import './App.css';
+import NavBar from './containers/NavBar';
+// import TrackList from './components/TrackList';
+import PlayBar from './containers/PlayBar';
+import useAudioLibraryStore from './stores/audioLibraryStore';
+import Library from './Library';
+import SingleAlbumView from './containers/SingleAlbumView';
 
 export default function App() {
+  const initAudioLibrary = useAudioLibraryStore(
+    (state) => state.initAudioLibrary
+  );
+
+  useEffect(() => {
+    initAudioLibrary();
+  }, [initAudioLibrary]);
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Hello />} />
-      </Routes>
-    </Router>
+    <>
+      {/* <TrackList /> */}
+      <Router>
+        <NavBar />
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<Library />} />
+            <Route path="/albums/:id" element={<SingleAlbumView />} />
+          </Routes>
+        </div>
+        <PlayBar />
+      </Router>
+    </>
   );
 }

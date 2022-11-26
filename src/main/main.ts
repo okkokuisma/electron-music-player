@@ -1,25 +1,24 @@
+/* eslint-disable global-require */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, IpcMainEvent } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
+import { opendir, readFile } from 'node:fs/promises';
+import { IAudioMetadata, parseFile } from 'music-metadata';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  IpcMainInvokeEvent,
+} from 'electron';
+// import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { AudioFile } from '../types';
 
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+import { MUSIC_DIR_URL } from '../config';
+
+console.log(MUSIC_DIR_URL);
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -96,10 +95,6 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
 };
 
 /**
@@ -114,20 +109,129 @@ app.on('window-all-closed', () => {
   }
 });
 
-const handleSetTitle = (event: IpcMainEvent, title: string) => {
-  const webContents = event.sender
-  const win = BrowserWindow.fromWebContents(webContents)
-  if (win) win.setTitle(title)
+async function* walk(dir: string): AsyncGenerator<string> {
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const d of await opendir(dir)) {
+    const entry = path.join(dir, d.name);
+    if (d.isDirectory()) yield* walk(entry);
+    else if (d.isFile()) yield entry;
+  }
 }
+
+const parseMime = (audioCodec: string | undefined): string => {
+  switch (audioCodec) {
+    case 'MPEG':
+      return 'audio/mpeg';
+    case 'Ogg':
+      return 'audio/ogg';
+    default:
+      throw new Error('unsupported mime');
+  }
+};
+
+const isString = (text: unknown): text is string => {
+  return typeof text === 'string' || text instanceof String;
+};
+
+const isNumber = (value: unknown): value is number => {
+  return typeof value === 'number' || value instanceof Number;
+};
+
+const isStringArray = (array: unknown[]): array is string[] => {
+  let isArray = true;
+  array.forEach((value) => {
+    if (!isString(value)) isArray = false;
+  });
+  return isArray;
+};
+
+const parseString = (content: unknown): string => {
+  if (!content || !isString(content)) {
+    throw new Error(`Incorrect or missing metadata value`);
+  }
+  return content;
+};
+
+const parseNumber = (content: unknown): number => {
+  if (!content || !isNumber(content)) {
+    throw new Error(`Incorrect or missing metadata value`);
+  }
+  return content;
+};
+
+const parseStringArray = (array: unknown[] | undefined): string[] => {
+  if (!array || !isStringArray(array)) {
+    throw new Error(`Incorrect or missing metadata value`);
+  }
+  return array;
+};
+
+const parseTrack = (data: IAudioMetadata, filePath: string): AudioFile => {
+  return {
+    metadata: {
+      songInfo: {
+        artist: parseString(data.common.artist),
+        album: parseString(data.common.album),
+        title: parseString(data.common.title),
+        genre: parseStringArray(data.common.genre),
+        picture: data.common.picture?.map((pic) => {
+          return { ...pic, data: Buffer.from(pic.data).toString('base64') };
+        }),
+        year: data.common.year,
+        track: data.common.track,
+        disk: data.common.disk,
+      },
+      format: {
+        mime: parseMime(data.format.container),
+        duration: parseNumber(data.format.duration),
+      },
+    },
+    filePath,
+  };
+};
+
+const handleMusicDirRead = async (): Promise<AudioFile[]> => {
+  try {
+    const fileMeta: AudioFile[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for await (const filePath of walk(MUSIC_DIR_URL)) {
+      if (['.mp3', '.ogg'].includes(path.extname(filePath))) {
+        const metadata = await parseFile(filePath);
+        try {
+          const parsedTrack = parseTrack(metadata, filePath);
+          fileMeta.push(parsedTrack);
+          // eslint-disable-next-line no-empty
+        } catch (error) {}
+      }
+    }
+    return fileMeta;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+
+const handleGetTrackAudio = async (
+  filePath: string
+): Promise<Buffer | null> => {
+  try {
+    return await readFile(filePath);
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
 
 app
   .whenReady()
   .then(() => {
-    ipcMain.on('set-title', handleSetTitle)
+    ipcMain.handle('read-music-dir', handleMusicDirRead);
+    ipcMain.handle(
+      'get-track-audio',
+      (_event: IpcMainInvokeEvent, [filePath]) => handleGetTrackAudio(filePath)
+    );
     createWindow();
-    app.on('activate', () => {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
+    return app.on('activate', () => {
       if (mainWindow === null) createWindow();
     });
   })

@@ -17,8 +17,13 @@ contextBridge.exposeInMainWorld('electron', {
       };
     },
     once(channel: Channels, func: (...args: unknown[]) => void) {
-      ipcRenderer.once(channel, (_event, ...args) => func(...args));
+      ipcRenderer.once(
+        channel,
+        (_event: IpcRendererEvent, ...args: unknown[]) => func(...args)
+      );
     },
   },
-  setTitle: (title: string) => ipcRenderer.send('set-title', title)
+  readMusicDir: () => ipcRenderer.invoke('read-music-dir'),
+  getTrackAudio: (filePath: string) =>
+    ipcRenderer.invoke('get-track-audio', [filePath]),
 });
