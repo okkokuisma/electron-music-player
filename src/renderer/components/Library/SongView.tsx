@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import useAudioLibraryStore from 'renderer/stores/audioLibraryStore';
 import SongDuration from 'renderer/components/SongDuration';
 import CoverPicture from 'renderer/components/CoverPicture';
-import useCurrentSongStore from '../stores/currentSongStore';
-import SongTitle from '../components/SongTitle';
+import { usePlayQueue } from 'renderer/hooks';
+import SongTitle from '../SongTitle';
 
 const ArtistName = ({ name }: { name: string | undefined }) => {
   return (
@@ -31,36 +31,40 @@ const AlbumName = ({
 };
 
 const SongView = () => {
-  const songs = useAudioLibraryStore((state) => Object.entries(state.songs));
-  // const setAudioSource = useCurrentSongStore((state) => state.setAudioSource);
-  // const setCurrentSong = useCurrentSongStore((state) => state.setCurrentSong);
-  const handlePlay = useCurrentSongStore((state) => state.handleSelectSong);
+  const songs = useAudioLibraryStore((state) =>
+    Object.entries(state.songs).map((s) => s[1])
+  );
+
+  const { handlePlay } = usePlayQueue();
 
   return (
     <ul className="song-list">
-      {songs.map((song) => (
+      {songs.map((song, index) => (
         <li
-          key={song[1].file.filePath}
+          key={song.file.filePath}
           id="song-view"
           className="song-list-member"
         >
-          {song[1].file.metadata.songInfo.picture ? (
+          {song.file.metadata.songInfo.picture ? (
             <CoverPicture
               width={30}
-              file={song[1].file}
-              handlePlay={handlePlay}
-              picture={song[1].file.metadata.songInfo.picture[0]}
+              file={song.file}
+              handlePlay={() => handlePlay(songs, index)}
+              picture={song.file.metadata.songInfo.picture[0]}
             />
           ) : (
             <i className="gg-music-note" />
           )}
-          <SongTitle song={song[1]} handlePlay={handlePlay} />
-          <ArtistName name={song[1].file.metadata.songInfo.artist} />
-          <AlbumName
-            name={song[1].file.metadata.songInfo.album}
-            albumHash={song[1].album}
+          <SongTitle
+            title={song.file.metadata.songInfo.title}
+            handlePlay={() => handlePlay(songs, index)}
           />
-          <SongDuration duration={song[1].file.metadata.format.duration} />
+          <ArtistName name={song.file.metadata.songInfo.artist} />
+          <AlbumName
+            name={song.file.metadata.songInfo.album}
+            albumHash={song.album}
+          />
+          <SongDuration duration={song.file.metadata.format.duration} />
         </li>
       ))}
     </ul>

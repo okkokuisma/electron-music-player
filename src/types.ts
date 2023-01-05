@@ -49,10 +49,22 @@ export interface Album {
   songs: number[];
   name: string;
   cover?: Picture;
+  artist: number;
+  year?: number;
 }
 
 export interface Song {
   file: AudioFile;
   artist: number;
   album: number;
+}
+
+export interface SongOptionModalParams {
+  coordinates: ModalCoordinates;
+  song: Song;
+}
+
+interface ModalCoordinates {
+  x: number;
+  y: number;
 }

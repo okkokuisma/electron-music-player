@@ -40,11 +40,6 @@ img {
   border-radius: 3px;
 }
 
-button:hover {
-  transform: scale(1.05);
-  opacity: 1;
-}
-
 li {
   list-style: none;
 }
@@ -125,23 +120,20 @@ a {
   letter-spacing: 0.2px;
 }
 
-#song-view.song-list-member {
+.song-list-member {
   display: grid;
-  grid-template-columns: 40px 2fr 1fr 1fr 1fr;
   width: 100%;
   height: 50px;
   text-align: center;
   border-top: 0.1px solid #272726;
 }
 
+#song-view.song-list-member {
+  grid-template-columns: 40px 2fr 1fr 1fr 1fr;
+}
+
 #single-album-view.song-list-member {
-  display: grid;
-  grid-template-columns: 40px 1fr 1fr 1fr;
-  width: 100%;
-  height: 50px;
-  text-align: center;
-  border-top: 0.1px solid #272726;
-  color: white;
+  grid-template-columns: 40px 1fr 100px 40px;
 }
 
 .song-list-member-grid:last-child {
@@ -154,16 +146,20 @@ a {
 
 .song-list-member-grid {
   display: flex;
-  align-items: center;
   justify-content: left;
+  align-items: center;
 }
 
 .song-list-main-info {
   font-weight: bold;
   color: white;
+  display: flex;
+  align-items: center;
 }
 
 .song-list-secondary-info {
+  display: flex;
+  align-items: center;
   color: #949492
 }
 
@@ -242,9 +238,10 @@ a {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 15px;
   background: #292928;
-  color: #949492
+  color: #949492;
 }
 
 #play-buttons {
@@ -338,4 +335,35 @@ a {
 
 .gg-more-vertical-alt {
   color: white;
+}
+
+.song-option-modal {
+  position: absolute;
+  background: #292928;
+  width: 150px;
+  color: white;
+  border: 1px solid #3b3b3a;
+  border-radius: 3px;
+  padding: 10px 0;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.song-option-modal-button {
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.song-option-modal-button:hover {
+  background-color: #3b3b3a;
+}
+
+.playbar-additional-controls {
+  margin-right: 1.5em;
 }

@@ -29,4 +29,21 @@ export const hash = (str: string, seed = 0): number => {
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
-export default { parseSecondsToTimeString, hash };
+export const immutableSplice = (
+  arr: unknown[],
+  start: number,
+  deleteCount: number,
+  ...items: any
+) => {
+  return [...arr.slice(0, start), ...items, ...arr.slice(start + deleteCount)];
+};
+
+export const shuffleArray = (array: unknown[]) => {
+  const shuffled = array
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+  return shuffled;
+};
+
+export default { parseSecondsToTimeString, hash, immutableSplice };

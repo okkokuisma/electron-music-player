@@ -1,14 +1,14 @@
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { getAudioSource } from '../services/audioFileService';
-import { AudioFile } from '../../types';
+import { Song } from '../../types';
 
 interface PlayedSongState {
   playing: boolean;
   audioSource: string;
-  currentSong: AudioFile | null;
+  currentSong: Song | null;
   currentTime: number;
-  handleSelectSong: (song: AudioFile) => void;
+  setCurrentSong: (song: Song) => void;
   setCurrentTime: (time: number) => void;
   // setCurrentSong: (track: AudioFile) => void;
   // setAudioSource: (filePath: string, fileFormat: string) => void;
@@ -39,10 +39,10 @@ const useCurrentSongStore = create<PlayedSongState>()(
       set((state) => {
         state.playing = isPlaying;
       }),
-    handleSelectSong: async (song) => {
+    setCurrentSong: async (song) => {
       const source = await getAudioSource(
-        song.filePath,
-        song.metadata.format.mime
+        song.file.filePath,
+        song.file.metadata.format.mime
       );
       set((state) => {
         state.audioSource = source;

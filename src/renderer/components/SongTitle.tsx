@@ -1,17 +1,15 @@
-import { Song, AudioFile } from 'types';
-
 const SongTitle = ({
-  song,
+  title,
   handlePlay,
 }: {
-  song: Song;
-  handlePlay: (file: AudioFile) => void;
+  title: string | undefined;
+  handlePlay: () => void;
 }) => {
   return (
     <div className="song-list-member-grid">
       <div className="song-list-main-info">
-        <button type="button" onClick={() => handlePlay(song.file)}>
-          {song.file.metadata.songInfo.title}
+        <button type="button" onClick={() => handlePlay()}>
+          {title}
         </button>
       </div>
     </div>

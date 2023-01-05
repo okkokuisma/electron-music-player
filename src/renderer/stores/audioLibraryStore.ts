@@ -1,11 +1,10 @@
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { getTracks } from '../services/audioFileService';
-import { AudioFile, Picture, Song, Artist, Album } from '../../types';
+import { AudioFile, Song, Artist, Album } from '../../types';
 import { hash } from '../utils';
 
-interface AudioLibraryStoreState {
-  audioFiles: AudioFile[];
+interface AudioLibrary {
   artists: { [artistId: number]: Artist };
   albums: {
     [albumId: number]: Album;
@@ -13,6 +12,10 @@ interface AudioLibraryStoreState {
   songs: {
     [trackId: number]: Song;
   };
+}
+
+interface AudioLibraryStoreState extends AudioLibrary {
+  audioFiles: AudioFile[];
   initAudioLibrary: () => void;
 }
 
@@ -30,22 +33,15 @@ interface AudioLibraryStoreState {
 //   }, initialValue);
 // };
 
-const reduceMeta = (audioFiles: AudioFile[]) => {
-  const initialValue: {
-    artists: { [artistId: number]: Artist };
-    albums: {
-      [albumId: number]: Album;
-    };
-    songs: {
-      [trackId: number]: Song;
-    };
-  } = { artists: {}, albums: {}, songs: {} };
+const reduceMeta = (audioFiles: AudioFile[]): AudioLibrary => {
+  const initialValue: AudioLibrary = { artists: {}, albums: {}, songs: {} };
 
   return audioFiles.reduce((library, next) => {
     const album = next.metadata.songInfo.album || 'unknown';
     const artist = next.metadata.songInfo.artist || 'unknown';
     const title = next.metadata.songInfo.title || 'unknown';
     const cover = next.metadata.songInfo.picture;
+    const year = next.metadata.songInfo?.year;
     const artistHash = hash(artist);
     const albumHash = hash(album);
     const titleHash = hash(title);
@@ -59,9 +55,10 @@ const reduceMeta = (audioFiles: AudioFile[]) => {
     }
 
     if (!library.albums[albumHash]) {
+      const baseAlbum = { name: album, songs: [], artist: artistHash, year };
       library.albums[albumHash] = cover
-        ? { name: album, songs: [], cover: cover[0] }
-        : { name: album, songs: [] };
+        ? { ...baseAlbum, cover: cover[0] }
+        : baseAlbum;
     }
 
     if (!library.albums[albumHash].songs.includes(titleHash)) {

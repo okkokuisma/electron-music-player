@@ -1,4 +1,4 @@
-import { AudioFileMetaData } from '../../types';
+import { AudioFileMetaData } from '../../../types';
 
 const TrackInfo = ({ metadata }: { metadata: AudioFileMetaData }) => {
   return (

@@ -2,12 +2,11 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 
 import './App.css';
-import NavBar from './containers/NavBar';
-// import TrackList from './components/TrackList';
-import PlayBar from './containers/PlayBar';
+import NavBar from './components/NavBar';
+import PlayBar from './components/PlayBar';
 import useAudioLibraryStore from './stores/audioLibraryStore';
-import Library from './Library';
-import SingleAlbumView from './containers/SingleAlbumView';
+import Library from './components/Library';
+import SingleAlbumView from './components/SingleAlbumView';
 
 export default function App() {
   const initAudioLibrary = useAudioLibraryStore(
