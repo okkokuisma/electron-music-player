@@ -8,7 +8,27 @@ export const useSongOptionModal = () => {
     null
   );
 
-  return { modalParams, setModalParams };
+  const handleModalClose = () => {
+    if (modalParams) {
+      setModalParams(null);
+    }
+  };
+
+  return { modalParams, setModalParams, handleModalClose };
+};
+
+export const useHover = () => {
+  const [hover, setHover] = useState<number | null>(null);
+
+  const handleMouseEnter = (index: number) => {
+    setHover(index);
+  };
+
+  const handleMouseLeave = () => {
+    setHover(null);
+  };
+
+  return { hover, setHover, handleMouseEnter, handleMouseLeave };
 };
 
 export const usePlayQueue = () => {
